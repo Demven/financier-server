@@ -1,0 +1,43 @@
+{
+  "name": "financier-server",
+  "version": "0.0.1",
+  "description": "Express.js + TS server for the Financier",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "npm run clean && tsc",
+    "start": "nodemon build/index.js",
+    "clean": "rimraf build",
+    "db-migration": "ts-node -O '{\"module\": \"commonjs\"}' src/dal/migrations/3-add-thanks-count",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Demven/financier-server.git"
+  },
+  "author": "Dmitry Salnikov",
+  "private": true,
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Demven/financier-server/issues"
+  },
+  "homepage": "https://github.com/Demven/financier-server#readme",
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/compression": "^1.7.5",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0",
+    "rimraf": "^5.0.5"
+  }
+}
