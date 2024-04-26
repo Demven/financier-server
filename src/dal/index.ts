@@ -1,4 +1,4 @@
-import { Client, ClientConfig } from 'pg';
+import { PoolClient, Pool, PoolConfig } from 'pg';
 
 const {
   POSTGRES_HOST,
@@ -8,30 +8,38 @@ const {
   POSTGRES_PORT,
 } = process.env;
 
-let client:Client;
+let pool:Pool;
 
-export async function connectToDatabase():Promise<Client> {
+export async function connectToDatabase() {
   console.info(`Connect to the database: ${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}...`);
 
-  client = new Client(<ClientConfig>{
+  pool = new Pool(<PoolConfig>{
     user: POSTGRES_USER,
     host: POSTGRES_HOST,
     database: POSTGRES_DB,
     password: POSTGRES_PASSWORD,
     port: POSTGRES_PORT,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
   });
 
-  await client.connect();
+  await pool.connect();
 
   console.info('Connected.');
-
-  return client;
 }
 
 export async function disconnect () {
-  return await client.end();
+  return await pool.end();
 }
 
-export default function getConnection ():Client {
-  return client;
+export async function query (sql:string):Promise<any> {
+  console.info('Query DB: ', sql);
+
+  const client:PoolClient = await pool.connect();
+  const result = await client.query(sql);
+
+  client.release();
+
+  return result;
 }
