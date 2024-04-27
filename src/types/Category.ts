@@ -8,7 +8,7 @@ export default interface Category {
   updatedAt: string;
 }
 
-export function validateCategory (category:any):{ valid:boolean; error:string; } {
+export function validateCategory (category:Category):{ valid:boolean; error:string; } {
   const {
     accountId,
     name,

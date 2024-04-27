@@ -53,7 +53,7 @@ export default interface Account {
   updatedAt: string;
 }
 
-export function validateAccount (account:any):{ valid:boolean; error:string; } {
+export function validateAccount (account:Account):{ valid:boolean; error:string; } {
   const {
     firstName,
     lastName,

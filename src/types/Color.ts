@@ -23,7 +23,7 @@ export default interface Color {
   updatedAt: string;
 }
 
-export function validateColor (color:any):{ valid:boolean; error:string; } {
+export function validateColor (color:Color):{ valid:boolean; error:string; } {
   const {
     accountId,
     name,
