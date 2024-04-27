@@ -58,6 +58,13 @@ categoryRouter.post('/', async (req:Request, res:Response, next:NextFunction) =>
     colorId,
   } = req.body;
 
+  if (!id) {
+    return res.json({
+      success: false,
+      error: `"id" is required`,
+    });
+  }
+
   const { valid, error } = validateCategory(req.body as Category);
 
   if (!valid) {
@@ -88,6 +95,13 @@ categoryRouter.post('/', async (req:Request, res:Response, next:NextFunction) =>
 
 categoryRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
   const { id } = req.body;
+
+  if (!id) {
+    return res.json({
+      success: false,
+      error: `"id" is required`,
+    });
+  }
 
   const categoryDeleted:boolean|void = await query({
     name: 'category-delete',

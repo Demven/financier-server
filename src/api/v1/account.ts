@@ -62,6 +62,13 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     currencySymbol,
   } = req.body;
 
+  if (!id) {
+    return res.json({
+      success: false,
+      error: `"id" is required`,
+    });
+  }
+
   const { valid, error } = validateAccount(req.body as Account);
 
   if (!valid) {
@@ -94,6 +101,13 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
 
 accountRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
   const { id } = req.body;
+
+  if (!id) {
+    return res.json({
+      success: false,
+      error: `"id" is required`,
+    });
+  }
 
   const accountDeleted:boolean|void = await query({
     name: 'account-delete',
