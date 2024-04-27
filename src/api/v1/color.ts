@@ -3,11 +3,14 @@ import { query } from '../../dal';
 
 const colorRouter = Router();
 
-colorRouter.get('/', (req:Request, res:Response) => {
-  query('SELECT * FROM color')
-    .then(results => {
-      res.json(results.rows);
-    });
+colorRouter.get('/', async (req:Request, res:Response) => {
+  const colors = await query({
+    name: 'color-get-all',
+    text: 'SELECT * FROM color',
+  })
+    .then(({ rows }) => rows);
+
+  res.json(colors);
 });
 
 export default colorRouter;

@@ -3,11 +3,14 @@ import { query } from '../../dal';
 
 const investmentRouter = Router();
 
-investmentRouter.get('/', (req:Request, res:Response) => {
-  query('SELECT * FROM investment')
-    .then(results => {
-      res.json(results.rows);
-    });
+investmentRouter.get('/', async (req:Request, res:Response) => {
+  const investments = await query({
+    name: 'investment-get-all',
+    text: 'SELECT * FROM investment',
+  })
+    .then(({ rows }) => rows);
+
+  res.json(investments);
 });
 
 export default investmentRouter;

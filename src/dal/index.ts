@@ -33,11 +33,17 @@ export async function disconnect () {
   return await pool.end();
 }
 
-export async function query (sql:string):Promise<any> {
-  console.info('Query DB: ', sql);
+export async function query (
+  { name, text, values = [] }:{ name:string; text: string; values?:any[] }
+):Promise<any> {
+  console.info('Query', `"${name}"`, text, values);
 
   const client:PoolClient = await pool.connect();
-  const result = await client.query(sql);
+  const result = await client.query({
+    name,
+    text,
+    values,
+  });
 
   client.release();
 

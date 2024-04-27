@@ -3,11 +3,14 @@ import { query } from '../../dal';
 
 const categoryRouter = Router();
 
-categoryRouter.get('/', (req:Request, res:Response) => {
-  query('SELECT * FROM category')
-    .then(results => {
-      res.json(results.rows);
-    });
+categoryRouter.get('/', async (req:Request, res:Response) => {
+  const categories = await query({
+    name: 'category-get-all',
+    text: 'SELECT * FROM category',
+  })
+    .then(({ rows }) => rows);
+
+  res.json(categories);
 });
 
 export default categoryRouter;
