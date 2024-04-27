@@ -1,4 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import {
+  Router,
+  Request,
+  Response,
+  NextFunction,
+} from 'express';
 import { query } from '../../dal';
 import Account, { validateAccount } from '../../types/Account';
 
@@ -36,8 +41,9 @@ accountRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
   const account:Account|void = await query({
     name: 'account-put',
     text: `INSERT INTO "account" ("firstName","lastName","email","language","currencyType","currencySymbol","createdAt","updatedAt")
-           VALUES ('${firstName}','${lastName}','${email}','${language}','${currencyType}','${currencySymbol}',now(),now())
+           VALUES ($1,$2,$3,$4,$5,$6,now(),now())
            RETURNING *;`,
+    values: [firstName, lastName, email, language, currencyType, currencySymbol],
   })
     .then(({ rows: [account] }) => account as Account)
     .catch(next);
@@ -68,15 +74,15 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
   const accountUpdated:boolean|void = await query({
     name: 'account-post',
     text: `UPDATE "account"
-           SET "firstName"=$1,
-               "lastName"=$2,
-               "email"=$3,
-               "language"=$4,
-               "currencyType"=$5,
-               "currencySymbol"=$6,
+           SET "firstName"=$2,
+               "lastName"=$3,
+               "email"=$4,
+               "language"=$5,
+               "currencyType"=$6,
+               "currencySymbol"=$7,
                "updatedAt"=now()
-           WHERE id=$7;`,
-    values: [firstName, lastName, email, language, currencyType, currencySymbol, id],
+           WHERE id=$1;`,
+    values: [id, firstName, lastName, email, language, currencyType, currencySymbol],
   })
     .then(({ rowCount }) => rowCount === 1)
     .catch(next);
@@ -87,9 +93,7 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
 });
 
 accountRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
-  const {
-    id,
-  } = req.body;
+  const { id } = req.body;
 
   const accountDeleted:boolean|void = await query({
     name: 'account-delete',
