@@ -46,6 +46,7 @@ export default interface Account {
   firstName: string;
   lastName: string;
   email: string;
+  password?: string;
   language: Language;
   currencyType: CurrencyType;
   currencySymbol: CurrencySymbol;

@@ -34,9 +34,10 @@ export async function disconnect () {
 }
 
 export async function query (
-  { name, text, values = [] }:{ name:string; text: string; values?:any[] }
+  { name, text, values = [] }:{ name:string; text: string; values?:any[] },
+  { doNotLogValues }:{ doNotLogValues: boolean; } = { doNotLogValues: false },
 ):Promise<any> {
-  console.info('Query', `"${name}"`, text, values);
+  console.info('Query', `"${name}"`, text, doNotLogValues ? '' : values);
 
   const client:PoolClient = await pool.connect();
   const result = await client.query({

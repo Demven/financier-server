@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS "account" (
   "firstName" varchar not null,
   "lastName" varchar not null,
   "email" varchar not null,
+  "password" varchar not null,
   "language" varchar not null,
   "currencyType" varchar not null,
   "currencySymbol" varchar not null,
@@ -12,8 +13,8 @@ CREATE TABLE IF NOT EXISTS "account" (
   CONSTRAINT "account_pkey" PRIMARY KEY ("id")
 );
 
-INSERT INTO "account" ("firstName","lastName","email","language","currencyType","currencySymbol","createdAt","updatedAt")
-   VALUES ('Dmitry','Salnikov','dmitry_salnikov@protonmail.com','en','USD','$',now(),now());
+INSERT INTO "account" ("firstName","lastName","email","password","language","currencyType","currencySymbol","createdAt","updatedAt")
+   VALUES ('Dmitry','Salnikov','dmitry_salnikov@protonmail.com','financier','en','USD','$',now(),now());
 
 CREATE TABLE IF NOT EXISTS "color" (
   "id" serial not null,

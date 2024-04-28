@@ -14,7 +14,11 @@ accountRouter.get('/', async (req:Request, res:Response) => {
     name: 'account-get-all',
     text: 'SELECT * FROM account',
   })
-    .then(({ rows }) => rows as Account[]);
+    .then(({ rows }) => rows as Account[])
+    .then((accounts) => accounts.map(account => ({
+      ...account,
+      password: '***',
+    })));
 
   res.json(accounts);
 });
@@ -24,10 +28,18 @@ accountRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     firstName,
     lastName,
     email,
+    password,
     language,
     currencyType,
     currencySymbol,
   } = req.body;
+
+  if (!password) {
+    return res.json({
+      success: false,
+      error: '"password" is required',
+    });
+  }
 
   const { valid, error } = validateAccount(req.body as Account);
 
@@ -40,11 +52,11 @@ accountRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
 
   const account:Account|void = await query({
     name: 'account-put',
-    text: `INSERT INTO "account" ("firstName","lastName","email","language","currencyType","currencySymbol","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,now(),now())
+    text: `INSERT INTO "account" ("firstName","lastName","email","password","language","currencyType","currencySymbol","createdAt","updatedAt")
+           VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())
            RETURNING *;`,
-    values: [firstName, lastName, email, language, currencyType, currencySymbol],
-  })
+    values: [firstName, lastName, email, password, language, currencyType, currencySymbol],
+  }, { doNotLogValues: true })
     .then(({ rows: [account] }) => account as Account)
     .catch(next);
 
