@@ -6,6 +6,7 @@ import express, {
   Response,
   NextFunction,
 } from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
@@ -13,12 +14,19 @@ import { connectToDatabase } from './dal';
 import apiV1Router from './api/v1';
 
 const {
+  NODE_ENV,
   PORT = '3000',
 } = process.env;
 
 connectToDatabase();
 
 const app:Express = express();
+
+if (NODE_ENV === 'development') {
+  app.use(cors());
+} else {
+  app.use(cors({ origin: /\.thefinancier\.app$/ }));
+}
 
 app.get('/', (request:Request, response:Response) => {
   response.send('Status: running');

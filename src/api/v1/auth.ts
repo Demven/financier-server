@@ -66,7 +66,7 @@ authRouter.post('/validate-token', (req:Request, res:Response) => {
 
   const tokenPayload:TokenPayload|null = decodeToken(token);
   if (tokenPayload) {
-    return res.json({ success: 'true', payload: tokenPayload });
+    return res.json({ success: true, payload: tokenPayload });
   } else {
     return res.status(400).send('Invalid token');
   }
