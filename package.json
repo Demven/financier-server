@@ -1,13 +1,13 @@
 {
   "name": "financier-server",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Express.js + TS server for the Financier",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "npm run clean && tsc",
     "start": "nodemon build/index.js",
-    "clean": "rimraf build",
+    "clean": "rimraf -rf build",
     "db-migration": "ts-node -O '{\"module\": \"commonjs\"}' src/dal/migrations/3-add-thanks-count",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docker-compose:up": "COMPOSE_PROJECT_NAME=financier docker-compose --env-file .env up -d",
