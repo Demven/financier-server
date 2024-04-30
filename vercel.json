@@ -3,6 +3,6 @@
   "outputDirectory": "build",
   "rewrites": [{
     "source": "/(.*)",
-    "destination": "/build"
+    "destination": "/src"
   }]
 }
