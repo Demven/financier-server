@@ -4,7 +4,7 @@ const {
   NODE_ENV,
   POSTGRES_HOST,
   POSTGRES_USER,
-  POSTGRES_DB,
+  POSTGRES_DATABASE,
   POSTGRES_PASSWORD,
   POSTGRES_PORT,
 } = process.env;
@@ -15,7 +15,7 @@ const connectionConfig:PoolConfig = NODE_ENV === 'development'
   ? <PoolConfig>{
     user: POSTGRES_USER,
     host: POSTGRES_HOST,
-    database: POSTGRES_DB,
+    database: POSTGRES_DATABASE,
     password: POSTGRES_PASSWORD,
     port: POSTGRES_PORT,
     max: 20,
@@ -27,7 +27,7 @@ const connectionConfig:PoolConfig = NODE_ENV === 'development'
   };
 
 export async function connectToDatabase() {
-  console.info(`Connect to the database: ${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}...`);
+  console.info(`Connect to the database: ${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}...`);
 
   pool = new Pool(connectionConfig);
 
