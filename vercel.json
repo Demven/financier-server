@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "outputDirectory": "build",
   "rewrites": [{
     "source": "/(.*)",
-    "destination": "/src"
+    "destination": "/"
   }]
 }
