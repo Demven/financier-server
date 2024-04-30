@@ -1,13 +1,11 @@
 {
   "name": "financier-server",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "description": "Express.js + TS server for the Financier",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "build": "npm run clean && tsc",
-    "start": "nodemon build/index.js",
-    "clean": "rimraf -rf build",
+    "start": "nodemon src/index.ts",
     "db-migration": "ts-node -O '{\"module\": \"commonjs\"}' src/dal/migrations/3-add-thanks-count",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docker-compose:up": "COMPOSE_PROJECT_NAME=financier docker-compose --env-file .env up -d",
@@ -47,7 +45,6 @@
     "express-jwt": "^8.4.1",
     "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.0",
-    "pg": "^8.11.5",
-    "rimraf": "^5.0.5"
+    "pg": "^8.11.5"
   }
 }
