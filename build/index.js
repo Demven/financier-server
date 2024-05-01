@@ -20,16 +20,15 @@ app.use((0, cors_1.default)());
 // } else {
 //   app.use(cors({ origin: /\.thefinancier\.app$/ }));
 // }
-if (NODE_ENV === 'production') {
-    app.use((req, res, next) => {
-        if (req.secure) {
-            next();
-        }
-        else {
-            res.redirect('https://' + req.headers.host + req.url);
-        }
-    });
-}
+// if (NODE_ENV === 'production') {
+//   app.use((req:Request, res:Response, next:NextFunction) => {
+//     if (req.secure) {
+//       next();
+//     } else {
+//       res.redirect('https://' + req.headers.host + req.url);
+//     }
+//   });
+// }
 app.get('/', (request, response) => {
     response.send('Status: running');
 });
