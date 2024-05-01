@@ -24,21 +24,21 @@ const app:Express = express();
 
 app.use(cors());
 
-// if (NODE_ENV === 'development') {
-//   app.use(cors());
-// } else {
-//   app.use(cors({ origin: /\.thefinancier\.app$/ }));
-// }
+if (NODE_ENV === 'development') {
+  app.use(cors());
+} else {
+  app.use(cors({ origin: /\.thefinancier\.app$/ }));
+}
 
-// if (NODE_ENV === 'production') {
-//   app.use((req:Request, res:Response, next:NextFunction) => {
-//     if (req.secure) {
-//       next();
-//     } else {
-//       res.redirect('https://' + req.headers.host + req.url);
-//     }
-//   });
-// }
+if (NODE_ENV === 'production') {
+  app.use((req:Request, res:Response, next:NextFunction) => {
+    if (req.secure) {
+      next();
+    } else {
+      res.redirect('https://' + req.headers.host + req.url);
+    }
+  });
+}
 
 app.get('/', (request:Request, response:Response) => {
   response.send('Status: running');
