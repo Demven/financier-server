@@ -22,11 +22,13 @@ connectToDatabase();
 
 const app:Express = express();
 
-if (NODE_ENV === 'development') {
-  app.use(cors());
-} else {
-  app.use(cors({ origin: /\.thefinancier\.app$/ }));
-}
+app.use(cors());
+
+// if (NODE_ENV === 'development') {
+//   app.use(cors());
+// } else {
+//   app.use(cors({ origin: /\.thefinancier\.app$/ }));
+// }
 
 if (NODE_ENV === 'production') {
   app.use((req:Request, res:Response, next:NextFunction) => {
