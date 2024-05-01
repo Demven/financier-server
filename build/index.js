@@ -14,12 +14,12 @@ const v1_1 = __importDefault(require("./api/v1"));
 const { NODE_ENV, PORT = '3000', } = process.env;
 (0, dal_1.connectToDatabase)();
 const app = (0, express_1.default)();
-if (NODE_ENV === 'development') {
-    app.use((0, cors_1.default)());
-}
-else {
-    app.use((0, cors_1.default)({ origin: /\.thefinancier\.app$/ }));
-}
+app.use((0, cors_1.default)());
+// if (NODE_ENV === 'development') {
+//   app.use(cors());
+// } else {
+//   app.use(cors({ origin: /\.thefinancier\.app$/ }));
+// }
 if (NODE_ENV === 'production') {
     app.use((req, res, next) => {
         if (req.secure) {
