@@ -1,6 +1,6 @@
 {
   "name": "financier-server",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "description": "Express.js + TS server for the Financier",
   "main": "build/index.js",
   "scripts": {
