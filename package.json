@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "npm run clean && tsc",
-    "start": "nodemon src/index.ts",
+    "start": "nodemon build/index.js",
     "clean": "rimraf -rf build",
     "db-migration": "ts-node -O '{\"module\": \"commonjs\"}' src/dal/migrations/3-add-thanks-count",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,6 +22,9 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Demven/financier-server/issues"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "homepage": "https://github.com/Demven/financier-server#readme",
   "devDependencies": {
