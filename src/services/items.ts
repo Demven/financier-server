@@ -1,35 +1,35 @@
-import Expense from '../types/Expense';
+import Item from '../types/Item';
 import GroupedItems from '../types/GroupedItems';
 
-export function groupItemsByYearMonthWeek (expenses:Expense[]):GroupedItems {
-  let expensesGroupedByYearMonthWeek:any = {};
+export function groupItemsByYearMonthWeek (items:Item[]):GroupedItems {
+  let itemsGroupedByYearMonthWeek:any = {};
 
-  expenses.forEach((expense:Expense) => {
-    const { year, month, week } = expense;
+  items.forEach((item:Item) => {
+    const { year, month, week } = item;
 
-    expensesGroupedByYearMonthWeek[year] = expensesGroupedByYearMonthWeek[year]
+    itemsGroupedByYearMonthWeek[year] = itemsGroupedByYearMonthWeek[year]
       ? {
-        ...expensesGroupedByYearMonthWeek[year],
-        [month]: expensesGroupedByYearMonthWeek[year][month]
+        ...itemsGroupedByYearMonthWeek[year],
+        [month]: itemsGroupedByYearMonthWeek[year][month]
           ? {
-            ...expensesGroupedByYearMonthWeek[year][month],
-            [week]: expensesGroupedByYearMonthWeek[year][month][week]
+            ...itemsGroupedByYearMonthWeek[year][month],
+            [week]: itemsGroupedByYearMonthWeek[year][month][week]
               ? [
-                ...expensesGroupedByYearMonthWeek[year][month][week],
-                expense,
+                ...itemsGroupedByYearMonthWeek[year][month][week],
+                item,
               ]
-              : [expense],
+              : [item],
           }
           : {
-            [week]: [expense],
+            [week]: [item],
           },
       }
       : {
         [month]: {
-          [week]: [expense],
+          [week]: [item],
         },
       }
   });
 
-  return <GroupedItems>expensesGroupedByYearMonthWeek;
+  return <GroupedItems>itemsGroupedByYearMonthWeek;
 }
