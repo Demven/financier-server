@@ -1,5 +1,6 @@
 import { Router as router } from 'express';
 import authRouter from './auth';
+import overviewRouter from './overview';
 import accountRouter from './account';
 import categoryRouter from './category';
 import colorRouter from './color';
@@ -16,6 +17,9 @@ v1Router.get('/status', (req, res) => {
 });
 
 v1Router.use('/auth', authRouter);
+
+v1Router.use('/overview', authorizationChain, overviewRouter);
+
 v1Router.use('/account', authorizationChain, accountRouter);
 v1Router.use('/category', authorizationChain, categoryRouter);
 v1Router.use('/color', authorizationChain, colorRouter);

@@ -10,6 +10,15 @@ export async function findByEmailAndPassword (email:string, password:string):Pro
     .then(({ rows: [account] }) => account as Account);
 }
 
+export async function findById (id:number):Promise<Account> {
+  return query({
+    name: 'account-get-one-by-id',
+    text: 'SELECT * FROM account WHERE "id"=$1;',
+    values: [id],
+  })
+    .then(({ rows: [account] }) => account as Account);
+}
+
 export async function findByEmail (email:string):Promise<Account> {
   return query({
     name: 'account-get-one-by-email-and-password',
