@@ -1,13 +1,9 @@
 import { Request, Response, Router } from 'express';
-import * as colorService from '../../services/color';
-import * as categoryService from '../../services/category';
 import * as expenseService from '../../services/expense';
 import * as incomeService from '../../services/income';
 import * as savingService from '../../services/saving';
 import * as investmentService from '../../services/investment';
 import { groupItemsByYearMonthWeek } from '../../services/items';
-import Color from '../../types/Color';
-import Category from '../../types/Category';
 import Expense from '../../types/Expense';
 import Income from '../../types/Income';
 import Saving from '../../types/Saving';
@@ -23,10 +19,6 @@ overviewRouter.get('/', async (req:Request, res:Response) => {
     ? Number(req.query.year)
     : new Date().getFullYear();
 
-  const defaultColors:Color[] = await colorService.findAllByAccountId(null);
-  const customColors:Color[] = await colorService.findAllByAccountId(id);
-  const categories:Category[] = await categoryService.findAllByAccountId(id);
-
   const expenses:Expense[] = await expenseService.findAllByAccountIdForYear(id, year);
   const expensesGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(expenses);
 
@@ -40,11 +32,7 @@ overviewRouter.get('/', async (req:Request, res:Response) => {
   const investmentsGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(investment);
 
   res.json({
-    colors: [
-      ...defaultColors,
-      ...customColors,
-    ],
-    categories,
+    year,
     expenses: expensesGroupedByYearMonthWeek,
     incomes: incomesGroupedByYearMonthWeek,
     savings: savingsGroupedByYearMonthWeek,

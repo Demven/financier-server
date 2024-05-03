@@ -1,5 +1,6 @@
 import { Router as router } from 'express';
 import authRouter from './auth';
+import basicsRouter from './basics';
 import overviewRouter from './overview';
 import accountRouter from './account';
 import categoryRouter from './category';
@@ -18,7 +19,9 @@ v1Router.get('/status', (req, res) => {
 
 v1Router.use('/auth', authRouter);
 
-v1Router.use('/overview', authorizationChain, overviewRouter);
+// endpoints for aggregated data
+v1Router.use('/basics', authorizationChain, basicsRouter); // account, colors, categories
+v1Router.use('/overview', authorizationChain, overviewRouter); // expenses, savings, investments, incomes
 
 v1Router.use('/account', authorizationChain, accountRouter);
 v1Router.use('/category', authorizationChain, categoryRouter);
