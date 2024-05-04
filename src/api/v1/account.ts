@@ -68,16 +68,24 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     id,
     firstName,
     lastName,
-    email,
     language,
     currencyType,
     currencySymbol,
   } = req.body;
 
+  const { auth: { id: authId }} = <any>req;
+
   if (!id) {
     return res.json({
       success: false,
       error: `"id" is required`,
+    });
+  }
+
+  if (authId !== id) {
+    return res.json({
+      success: false,
+      error: `"id" doesn't match the authorized user`,
     });
   }
 
@@ -95,13 +103,12 @@ accountRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     text: `UPDATE "account"
            SET "firstName"=$2,
                "lastName"=$3,
-               "email"=$4,
-               "language"=$5,
-               "currencyType"=$6,
-               "currencySymbol"=$7,
+               "language"=$4,
+               "currencyType"=$5,
+               "currencySymbol"=$6,
                "updatedAt"=now()
            WHERE id=$1;`,
-    values: [id, firstName, lastName, email, language, currencyType, currencySymbol],
+    values: [id, firstName, lastName, language, currencyType, currencySymbol],
   })
     .then(({ rowCount }) => rowCount === 1)
     .catch(next);
