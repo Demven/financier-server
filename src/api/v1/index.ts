@@ -9,6 +9,10 @@ import expenseRouter from './expense';
 import incomeRouter from './income';
 import savingRouter from './saving';
 import investmentRouter from './investment';
+import expensesTotalsRouter from './expensesTotals';
+import incomesTotalsRouter from './incomesTotals';
+import savingsTotalsRouter from './savingsTotals';
+import investmentsTotalsRouter from './investmentsTotals';
 import { authorizationChain } from '../middleware/authorization';
 
 const v1Router = router();
@@ -30,5 +34,10 @@ v1Router.use('/expense', authorizationChain, expenseRouter);
 v1Router.use('/income', authorizationChain, incomeRouter);
 v1Router.use('/saving', authorizationChain, savingRouter);
 v1Router.use('/investment', authorizationChain, investmentRouter);
+
+v1Router.use('/expensesTotals', authorizationChain, expensesTotalsRouter);
+v1Router.use('/incomesTotals', authorizationChain, incomesTotalsRouter);
+v1Router.use('/savingsTotals', authorizationChain, savingsTotalsRouter);
+v1Router.use('/investmentsTotals', authorizationChain, investmentsTotalsRouter);
 
 export default v1Router;

@@ -9,3 +9,12 @@ export async function findAllByAccountIdForYear (id:number, year:number):Promise
   })
     .then(({ rows }) => rows as Income[]);
 }
+
+export async function findIncomesAmountsByAccountId (accountId:number):Promise<Income[]> {
+  return query({
+    name: `income-get-amounts-by-account-id-${accountId}`,
+    text: 'SELECT "year","month","week","amount" FROM "income" WHERE "accountId"=$1 ORDER BY "year";',
+    values: [accountId],
+  })
+    .then(({ rows }) => rows as Income[]);
+}
