@@ -2,26 +2,31 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  findAllByAccountIdForYear,
+  addInvestment,
+  updateInvestment,
+  deleteInvestment,
+} from '../../services/investment';
 import Investment, { validateInvestment } from '../../types/Investment';
 
 const investmentRouter = Router();
 
 investmentRouter.get('/', async (req:Request, res:Response) => {
-  const investments = await query({
-    name: 'investment-get-all',
-    text: 'SELECT * FROM investment',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
+
+  const year = Number(req.query.year)
+    ? Number(req.query.year)
+    : new Date().getFullYear();
+
+  const investments = await findAllByAccountIdForYear(accountId, year);
 
   res.json(investments);
 });
 
-investmentRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+investmentRouter.put('/', async (req:Request, res:Response) => {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -32,7 +37,20 @@ investmentRouter.put('/', async (req:Request, res:Response, next:NextFunction) =
     pricePerShare,
   } = req.body;
 
-  const { valid, error } = validateInvestment(req.body as Investment);
+  const { auth: { id: accountId }} = <any>req;
+
+  const investment:Investment = {
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    ticker,
+    shares,
+    pricePerShare,
+  } as Investment;
+
+  const { valid, error } = validateInvestment(investment);
 
   if (!valid) {
     return res.json({
@@ -41,23 +59,22 @@ investmentRouter.put('/', async (req:Request, res:Response, next:NextFunction) =
     });
   }
 
-  const investment:Investment|void = await query({
-    name: 'investment-put',
-    text: `INSERT INTO "investment" ("accountId","name","dateString","year","month","week","ticker","shares","pricePerShare","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, dateString, year, month, week, ticker, shares, pricePerShare],
-  })
-    .then(({ rows: [investment] }) => investment as Investment)
-    .catch(next);
+  const {
+    success,
+    investment: savedInvestment,
+    totals,
+  } = await addInvestment(accountId, investment);
 
-  return res.json(investment);
+  return res.json({
+    success,
+    investment: savedInvestment,
+    totals,
+  });
 });
 
-investmentRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+investmentRouter.post('/', async (req:Request, res:Response) => {
   const {
     id,
-    accountId,
     name,
     dateString,
     year,
@@ -67,6 +84,8 @@ investmentRouter.post('/', async (req:Request, res:Response, next:NextFunction) 
     shares,
     pricePerShare,
   } = req.body;
+
+  const { auth: { id: accountId }} = <any>req;
 
   if (!id) {
     return res.json({
@@ -75,7 +94,19 @@ investmentRouter.post('/', async (req:Request, res:Response, next:NextFunction) 
     });
   }
 
-  const { valid, error } = validateInvestment(req.body as Investment);
+  const investment:Investment = {
+    id,
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    ticker,
+    shares,
+    pricePerShare,
+  } as Investment;
+
+  const { valid, error } = validateInvestment(investment);
 
   if (!valid) {
     return res.json({
@@ -84,31 +115,18 @@ investmentRouter.post('/', async (req:Request, res:Response, next:NextFunction) 
     });
   }
 
-  const investmentUpdated:boolean|void = await query({
-    name: 'investment-post',
-    text: `UPDATE "investment"
-           SET "accountId"=$2,
-               "name"=$3,
-               "dateString"=$4,
-               "year"=$5,
-               "month"=$6,
-               "week"=$7,
-               "ticker"=$8,
-               "shares"=$9,
-               "pricePerShare"=$10,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, dateString, year, month, week, ticker, shares, pricePerShare],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const {
+    success,
+    totals,
+  } = await updateInvestment(accountId, investment);
 
   return res.json({
-    success: investmentUpdated === true,
+    success,
+    totals,
   });
 });
 
-investmentRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+investmentRouter.delete('/', async (req:Request, res:Response) => {
   const { id } = req.body;
 
   if (!id) {
@@ -118,17 +136,16 @@ investmentRouter.delete('/', async (req:Request, res:Response, next:NextFunction
     });
   }
 
-  const investmentDeleted:boolean|void = await query({
-    name: 'investment-delete',
-    text: `DELETE FROM "investment"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const { auth: { id: accountId }} = <any>req;
+
+  const {
+    success,
+    totals,
+  } = await deleteInvestment(accountId, id);
 
   return res.json({
-    success: investmentDeleted === true,
+    success,
+    totals,
   });
 });
 

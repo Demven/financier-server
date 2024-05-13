@@ -2,6 +2,49 @@ import { formatNumber, getAmount } from './amount';
 import Totals, { MonthTotals, YearTotals } from '../types/Totals';
 import Item from '../types/Item';
 
+export function patchTotalsForWeekItems ({
+  currentTotals,
+  items,
+  year,
+  month,
+  week,
+}:{ currentTotals:any, items:Item[], year:number, month:number, week:number }
+):Totals {
+  const previousWeekValue: number = currentTotals?.[year]?.[month]?.[week] || 0;
+  const newWeekTotal = items.reduce((total, item) => total + getAmount(item), 0);
+  const weekDifference = newWeekTotal - previousWeekValue;
+
+  const patchedTotals: Totals = calculateAllYearsTotals({
+    ...currentTotals,
+    [year]: calculateYearTotals({
+      ...(currentTotals?.[year] || {}),
+      [month]: calculateMonthTotals({
+        ...(currentTotals?.[year]?.[month] || {}),
+        total: (currentTotals?.[year]?.[month]?.total || 0) + weekDifference,
+        average: formatNumber(((currentTotals?.[year]?.[month]?.average || 0) / 4) + (weekDifference / 4)),
+        [week]: newWeekTotal,
+      }),
+    })
+  });
+
+  // delete empty week
+  if (!newWeekTotal) {
+    delete patchedTotals[year][month][week];
+  }
+
+  // delete empty month
+  if (!patchedTotals[year][month].total) {
+    delete patchedTotals[year][month];
+  }
+
+  // delete empty year
+  if (!patchedTotals[year].total) {
+    delete patchedTotals[year];
+  }
+
+  return patchedTotals;
+}
+
 export function calculateTotalsForItems (items:Item[]):Totals {
   const yearsTotals = items.reduce((totalsForYears:any, item:Item) => {
     const { year, month, week } = item;

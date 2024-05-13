@@ -5,6 +5,7 @@ export interface MonthTotals {
   2?: number|undefined,
   3?: number|undefined,
   4?: number|undefined,
+  [key:number]: YearTotals;
 }
 
 export interface YearTotals {
@@ -22,6 +23,7 @@ export interface YearTotals {
   10?: MonthTotals|undefined,
   11?: MonthTotals|undefined,
   12?: MonthTotals|undefined,
+  [key:number]: YearTotals;
 }
 
 export default interface Totals {

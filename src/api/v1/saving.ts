@@ -2,26 +2,31 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  findAllByAccountIdForYear,
+  addSaving,
+  updateSaving,
+  deleteSaving,
+} from '../../services/saving';
 import Saving, { validateSaving } from '../../types/Saving';
 
 const savingRouter = Router();
 
 savingRouter.get('/', async (req:Request, res:Response) => {
-  const savings = await query({
-    name: 'saving-get-all',
-    text: 'SELECT * FROM saving',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
+
+  const year = Number(req.query.year)
+    ? Number(req.query.year)
+    : new Date().getFullYear();
+
+  const savings = await findAllByAccountIdForYear(accountId, year);
 
   res.json(savings);
 });
 
-savingRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+savingRouter.put('/', async (req:Request, res:Response) => {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -30,7 +35,18 @@ savingRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     amount,
   } = req.body;
 
-  const { valid, error } = validateSaving(req.body as Saving);
+  const { auth: { id: accountId }} = <any>req;
+
+  const saving:Saving = {
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Saving;
+
+  const { valid, error } = validateSaving(saving);
 
   if (!valid) {
     return res.json({
@@ -39,23 +55,22 @@ savingRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const saving:Saving|void = await query({
-    name: 'saving-put',
-    text: `INSERT INTO "saving" ("accountId","name","dateString","year","month","week","amount","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, dateString, year, month, week, amount],
-  })
-    .then(({ rows: [saving] }) => saving as Saving)
-    .catch(next);
+  const {
+    success,
+    saving: savedSaving,
+    totals,
+  } = await addSaving(accountId, saving);
 
-  return res.json(saving);
+  return res.json({
+    success,
+    saving: savedSaving,
+    totals,
+  });
 });
 
-savingRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+savingRouter.post('/', async (req:Request, res:Response) => {
   const {
     id,
-    accountId,
     name,
     dateString,
     year,
@@ -63,6 +78,8 @@ savingRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     week,
     amount,
   } = req.body;
+
+  const { auth: { id: accountId }} = <any>req;
 
   if (!id) {
     return res.json({
@@ -71,7 +88,17 @@ savingRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const { valid, error } = validateSaving(req.body as Saving);
+  const saving:Saving = {
+    id,
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Saving;
+
+  const { valid, error } = validateSaving(saving);
 
   if (!valid) {
     return res.json({
@@ -80,29 +107,18 @@ savingRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const savingUpdated:boolean|void = await query({
-    name: 'saving-post',
-    text: `UPDATE "saving"
-           SET "accountId"=$2,
-               "name"=$3,
-               "dateString"=$4,
-               "year"=$5,
-               "month"=$6,
-               "week"=$7,
-               "amount"=$8,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, dateString, year, month, week, amount],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const {
+    success,
+    totals,
+  } = await updateSaving(accountId, saving);
 
   return res.json({
-    success: savingUpdated === true,
+    success,
+    totals,
   });
 });
 
-savingRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+savingRouter.delete('/', async (req:Request, res:Response) => {
   const { id } = req.body;
 
   if (!id) {
@@ -112,17 +128,16 @@ savingRouter.delete('/', async (req:Request, res:Response, next:NextFunction) =>
     });
   }
 
-  const savingDeleted:boolean|void = await query({
-    name: 'saving-delete',
-    text: `DELETE FROM "saving"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const { auth: { id: accountId }} = <any>req;
+
+  const {
+    success,
+    totals,
+  } = await deleteSaving(accountId, id);
 
   return res.json({
-    success: savingDeleted === true,
+    success,
+    totals,
   });
 });
 

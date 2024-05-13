@@ -2,26 +2,31 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  findAllByAccountIdForYear,
+  addIncome,
+  updateIncome,
+  deleteIncome,
+} from '../../services/income';
 import Income, { validateIncome } from '../../types/Income';
 
 const incomeRouter = Router();
 
 incomeRouter.get('/', async (req:Request, res:Response) => {
-  const incomes = await query({
-    name: 'income-get-all',
-    text: 'SELECT * FROM income',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
+
+  const year = Number(req.query.year)
+    ? Number(req.query.year)
+    : new Date().getFullYear();
+
+  const incomes = await findAllByAccountIdForYear(accountId, year);
 
   res.json(incomes);
 });
 
-incomeRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+incomeRouter.put('/', async (req:Request, res:Response) => {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -30,7 +35,18 @@ incomeRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     amount,
   } = req.body;
 
-  const { valid, error } = validateIncome(req.body as Income);
+  const { auth: { id: accountId }} = <any>req;
+
+  const income:Income = {
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Income;
+
+  const { valid, error } = validateIncome(income);
 
   if (!valid) {
     return res.json({
@@ -39,23 +55,22 @@ incomeRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const income:Income|void = await query({
-    name: 'income-put',
-    text: `INSERT INTO "income" ("accountId","name","dateString","year","month","week","amount","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, dateString, year, month, week, amount],
-  })
-    .then(({ rows: [income] }) => income as Income)
-    .catch(next);
+  const {
+    success,
+    income: savedIncome,
+    totals,
+  } = await addIncome(accountId, income);
 
-  return res.json(income);
+  return res.json({
+    success,
+    income: savedIncome,
+    totals,
+  });
 });
 
-incomeRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+incomeRouter.post('/', async (req:Request, res:Response) => {
   const {
     id,
-    accountId,
     name,
     dateString,
     year,
@@ -63,6 +78,8 @@ incomeRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     week,
     amount,
   } = req.body;
+
+  const { auth: { id: accountId }} = <any>req;
 
   if (!id) {
     return res.json({
@@ -71,7 +88,17 @@ incomeRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const { valid, error } = validateIncome(req.body as Income);
+  const income:Income = {
+    id,
+    name,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Income;
+
+  const { valid, error } = validateIncome(income);
 
   if (!valid) {
     return res.json({
@@ -80,29 +107,18 @@ incomeRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const incomeUpdated:boolean|void = await query({
-    name: 'income-post',
-    text: `UPDATE "income"
-           SET "accountId"=$2,
-               "name"=$3,
-               "dateString"=$4,
-               "year"=$5,
-               "month"=$6,
-               "week"=$7,
-               "amount"=$8,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, dateString, year, month, week, amount],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const {
+    success,
+    totals,
+  } = await updateIncome(accountId, income);
 
   return res.json({
-    success: incomeUpdated === true,
+    success,
+    totals,
   });
 });
 
-incomeRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+incomeRouter.delete('/', async (req:Request, res:Response) => {
   const { id } = req.body;
 
   if (!id) {
@@ -112,17 +128,16 @@ incomeRouter.delete('/', async (req:Request, res:Response, next:NextFunction) =>
     });
   }
 
-  const incomeDeleted:boolean|void = await query({
-    name: 'income-delete',
-    text: `DELETE FROM "income"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const { auth: { id: accountId }} = <any>req;
+
+  const {
+    success,
+    totals,
+  } = await deleteIncome(accountId, id);
 
   return res.json({
-    success: incomeDeleted === true,
+    success,
+    totals,
   });
 });
 

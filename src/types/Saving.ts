@@ -13,7 +13,6 @@ export default interface Saving {
 
 export function validateSaving (saving:Saving):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -23,10 +22,6 @@ export function validateSaving (saving:Saving):{ valid:boolean; error:string; } 
   } = saving;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

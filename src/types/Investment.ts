@@ -15,7 +15,6 @@ export default interface Investment {
 
 export function validateInvestment (investment:Investment):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -27,10 +26,6 @@ export function validateInvestment (investment:Investment):{ valid:boolean; erro
   } = investment;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

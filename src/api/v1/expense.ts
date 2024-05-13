@@ -2,26 +2,31 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  addExpense,
+  updateExpense,
+  deleteExpense,
+  findAllByAccountIdForYear,
+} from '../../services/expense';
 import Expense, { validateExpense } from '../../types/Expense';
 
 const expenseRouter = Router();
 
 expenseRouter.get('/', async (req:Request, res:Response) => {
-  const expenses = await query({
-    name: 'expense-get-all',
-    text: 'SELECT * FROM expense',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
+
+  const year = Number(req.query.year)
+    ? Number(req.query.year)
+    : new Date().getFullYear();
+
+  const expenses = await findAllByAccountIdForYear(accountId, year);
 
   res.json(expenses);
 });
 
-expenseRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+expenseRouter.put('/', async (req:Request, res:Response) => {
   const {
-    accountId,
     name,
     categoryId,
     dateString,
@@ -31,7 +36,19 @@ expenseRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     amount,
   } = req.body;
 
-  const { valid, error } = validateExpense(req.body as Expense);
+  const { auth: { id: accountId }} = <any>req;
+
+  const expense:Expense = {
+    name,
+    categoryId,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Expense;
+
+  const { valid, error } = validateExpense(expense);
 
   if (!valid) {
     return res.json({
@@ -40,23 +57,22 @@ expenseRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const expense:Expense|void = await query({
-    name: 'expense-put',
-    text: `INSERT INTO "expense" ("accountId","name","categoryId","dateString","year","month","week","amount","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, categoryId, dateString, year, month, week, amount],
-  })
-    .then(({ rows: [expense] }) => expense as Expense)
-    .catch(next);
+  const {
+    success,
+    expense: savedExpense,
+    totals,
+  } = await addExpense(accountId, expense);
 
-  return res.json(expense);
+  return res.json({
+    success,
+    expense: savedExpense,
+    totals,
+  });
 });
 
-expenseRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+expenseRouter.post('/', async (req:Request, res:Response) => {
   const {
     id,
-    accountId,
     name,
     categoryId,
     dateString,
@@ -65,6 +81,8 @@ expenseRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     week,
     amount,
   } = req.body;
+
+  const { auth: { id: accountId }} = <any>req;
 
   if (!id) {
     return res.json({
@@ -73,7 +91,18 @@ expenseRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     });
   }
 
-  const { valid, error } = validateExpense(req.body as Expense);
+  const expense:Expense = {
+    id,
+    name,
+    categoryId,
+    dateString,
+    year,
+    month,
+    week,
+    amount,
+  } as Expense;
+
+  const { valid, error } = validateExpense(expense);
 
   if (!valid) {
     return res.json({
@@ -82,30 +111,18 @@ expenseRouter.post('/', async (req:Request, res:Response, next:NextFunction) => 
     });
   }
 
-  const expenseUpdated:boolean|void = await query({
-    name: 'expense-post',
-    text: `UPDATE "expense"
-           SET "accountId"=$2,
-               "name"=$3,
-               "categoryId"=$4,
-               "dateString"=$5,
-               "year"=$6,
-               "month"=$7,
-               "week"=$8,
-               "amount"=$9,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, categoryId, dateString, year, month, week, amount],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const {
+    success,
+    totals,
+  } = await updateExpense(accountId, expense);
 
   return res.json({
-    success: expenseUpdated === true,
+    success,
+    totals,
   });
 });
 
-expenseRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+expenseRouter.delete('/', async (req:Request, res:Response) => {
   const { id } = req.body;
 
   if (!id) {
@@ -115,17 +132,16 @@ expenseRouter.delete('/', async (req:Request, res:Response, next:NextFunction) =
     });
   }
 
-  const expenseDeleted:boolean|void = await query({
-    name: 'expense-delete',
-    text: `DELETE FROM "expense"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const { auth: { id: accountId }} = <any>req;
+
+  const {
+    success,
+    totals,
+  } = await deleteExpense(accountId, id);
 
   return res.json({
-    success: expenseDeleted === true,
+    success,
+    totals,
   });
 });
 

@@ -14,7 +14,6 @@ export default interface Expense {
 
 export function validateExpense (expense:Expense):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     categoryId,
     dateString,
@@ -25,10 +24,6 @@ export function validateExpense (expense:Expense):{ valid:boolean; error:string;
   } = expense;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

@@ -13,7 +13,6 @@ export default interface Income {
 
 export function validateIncome (income:Income):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     dateString,
     year,
@@ -23,10 +22,6 @@ export function validateIncome (income:Income):{ valid:boolean; error:string; } 
   } = income;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

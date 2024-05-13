@@ -1,8 +1,9 @@
 import { query } from '../dal';
-import { findSavingsAmountsByAccountId } from './saving';
-import { calculateTotalsForItems } from '../utils/totals';
-import Totals from '../types/Totals';
+import { findAllByAccountIdForWeek, findSavingsAmountsByAccountId } from './saving';
+import { calculateTotalsForItems, patchTotalsForWeekItems } from '../utils/totals';
 import Saving from '../types/Saving';
+import Totals from '../types/Totals';
+import Item from '../types/Item';
 
 export async function getSavingsTotals (accountId: number):Promise<Totals> {
   return query({
@@ -33,4 +34,48 @@ export async function calculateSavingsTotalsForAccount (accountId:number):Promis
   return calculateTotalsForItems(allSavings);
 }
 
+export async function patchSavingsTotals (
+  accountId:number,
+  currentTotals:Totals,
+  year:number,
+  month:number,
+  week:number,
+  savingBefore?:Saving,
+):Promise<Totals> {
+  const updatedWeekSavings:Saving[] = await findAllByAccountIdForWeek(accountId, year, month, week);
 
+  let patchedTotals:Totals = await patchTotalsForWeekItems({
+    currentTotals,
+    items: updatedWeekSavings as Item[],
+    year,
+    month,
+    week,
+  });
+
+  const needToPatchTwoDifferentWeeks:boolean = !!savingBefore && (
+    year !== savingBefore.year
+    || month !== savingBefore.month
+    || week !== savingBefore.week
+  );
+
+  if (needToPatchTwoDifferentWeeks && savingBefore?.year && savingBefore?.month && savingBefore?.week) {
+    const weekSavings:Saving[] = await findAllByAccountIdForWeek(
+      accountId,
+      savingBefore.year,
+      savingBefore.month,
+      savingBefore.week,
+    );
+
+    patchedTotals = patchTotalsForWeekItems({
+      currentTotals: patchedTotals,
+      items: weekSavings as Item[],
+      year: savingBefore.year,
+      month: savingBefore.month,
+      week: savingBefore.week,
+    });
+  }
+
+  saveSavingsTotals(accountId, patchedTotals);
+
+  return patchedTotals;
+}
