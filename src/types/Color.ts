@@ -25,7 +25,6 @@ export default interface Color {
 
 export function validateColor (color:Color):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     hex,
     red,
@@ -35,10 +34,6 @@ export function validateColor (color:Color):{ valid:boolean; error:string; } {
   } = color;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

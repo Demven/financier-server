@@ -4,24 +4,32 @@ import {
   Response,
   NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  findAllByAccountId,
+  addCustomColor,
+  updateColor,
+  deleteColor,
+} from '../../services/color';
 import Color, { validateColor } from '../../types/Color';
 
 const colorRouter = Router();
 
 colorRouter.get('/', async (req:Request, res:Response) => {
-  const colors = await query({
-    name: 'color-get-all',
-    text: 'SELECT * FROM color',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
 
-  res.json(colors);
+  const defaultColors:Color[] = await findAllByAccountId(null);
+  const customColors:Color[] = await findAllByAccountId(accountId);
+
+  res.json([
+    ...defaultColors,
+    ...customColors,
+  ]);
 });
 
-colorRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+colorRouter.put('/', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+
   const {
-    accountId,
     name,
     hex,
     red,
@@ -30,7 +38,16 @@ colorRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     intensity,
   } = req.body;
 
-  const { valid, error } = validateColor(req.body as Color);
+  const colorToSave = {
+    name,
+    hex,
+    red,
+    green,
+    blue,
+    intensity,
+  } as Color;
+
+  const { valid, error } = validateColor(colorToSave);
 
   if (!valid) {
     return res.json({
@@ -39,23 +56,22 @@ colorRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const color:Color|void = await query({
-    name: 'color-put',
-    text: `INSERT INTO "color" ("accountId","name","hex","red","green","blue","intensity","custom","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, hex, red, green, blue, intensity, true], // all new colors are "custom" by default
-  })
-    .then(({ rows: [color] }) => color as Color)
-    .catch(next);
+  const {
+    success,
+    color: savedColor,
+  } = await addCustomColor(accountId, colorToSave);
 
-  return res.json(color);
+  return res.json({
+    success,
+    color: savedColor,
+  });
 });
 
-colorRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+colorRouter.post('/', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+
   const {
     id,
-    accountId,
     name,
     hex,
     red,
@@ -63,6 +79,16 @@ colorRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     blue,
     intensity,
   } = req.body;
+
+  const colorToUpdate = {
+    id,
+    name,
+    hex,
+    red,
+    green,
+    blue,
+    intensity,
+  } as Color;
 
   if (!id) {
     return res.json({
@@ -71,7 +97,7 @@ colorRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const { valid, error } = validateColor(req.body as Color);
+  const { valid, error } = validateColor(colorToUpdate);
 
   if (!valid) {
     return res.json({
@@ -80,22 +106,7 @@ colorRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
     });
   }
 
-  const colorUpdated:boolean|void = await query({
-    name: 'color-post',
-    text: `UPDATE "color"
-           SET "accountId"=$2,
-               "name"=$3,
-               "hex"=$4,
-               "red"=$5,
-               "green"=$6,
-               "blue"=$7,
-               "intensity"=$8,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, hex, red, green, blue, intensity],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const colorUpdated:boolean|void = await updateColor(accountId, colorToUpdate);
 
   return res.json({
     success: colorUpdated === true,
@@ -103,6 +114,7 @@ colorRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
 });
 
 colorRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+  const { auth: { id: accountId }} = <any>req;
   const { id } = req.body;
 
   if (!id) {
@@ -112,14 +124,7 @@ colorRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => 
     });
   }
 
-  const colorDeleted:boolean|void = await query({
-    name: 'color-delete',
-    text: `DELETE FROM "color"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const colorDeleted:boolean|void = await deleteColor(accountId, id);
 
   return res.json({
     success: colorDeleted === true,

@@ -22,7 +22,7 @@ export async function saveSavingsTotals (accountId: number, totals: Totals):Prom
                "updatedAt"=now()
            WHERE "accountId"=$1;`,
     values: [accountId, totals],
-  })
+  }, { doNotLogValues: true })
     .then(({ rowCount }) => rowCount === 1);
 
   return totalsUpdated === true;
