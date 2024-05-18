@@ -2,7 +2,6 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
 import {
   findAllByAccountId,
@@ -113,7 +112,7 @@ colorRouter.post('/', async (req:Request, res:Response) => {
   });
 });
 
-colorRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+colorRouter.delete('/', async (req:Request, res:Response) => {
   const { auth: { id: accountId }} = <any>req;
   const { id } = req.body;
 

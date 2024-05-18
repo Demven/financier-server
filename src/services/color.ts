@@ -4,7 +4,10 @@ import Color from '../types/Color';
 export async function findAllByAccountId (id:number|null):Promise<Color[]> {
   return query({
     name: `color-get-all-by-account-id-${id}`,
-    text: `SELECT * FROM color WHERE ${id ? '"accountId"=$1' : '"accountId" is null'};`,
+    text: `SELECT * 
+           FROM "color"
+           WHERE ${id ? '"accountId"=$1' : '"accountId" is null'}
+           ORDER BY "id" ASC;`,
     values: id ? [id] : undefined,
   })
     .then(({ rows }) => rows as Color[]);
@@ -57,7 +60,7 @@ export async function updateColor (accountId:number, color:Color):Promise<boolea
   } = color;
 
   return query({
-    name: `color-update-${id}`,
+    name: `color-update-id-${id}`,
     text: `UPDATE "color"
            SET "accountId"=$2,
                "name"=$3,

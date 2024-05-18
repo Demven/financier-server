@@ -10,16 +10,11 @@ export default interface Category {
 
 export function validateCategory (category:Category):{ valid:boolean; error:string; } {
   const {
-    accountId,
     name,
     colorId,
   } = category;
 
   let error = '';
-
-  if (!accountId || typeof accountId !== 'number') {
-    error = '"accountId" is required';
-  }
 
   if (!name?.length) {
     error = '"name" is empty';

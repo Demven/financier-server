@@ -2,32 +2,39 @@ import {
   Router,
   Request,
   Response,
-  NextFunction,
 } from 'express';
-import { query } from '../../dal';
+import {
+  addCategory, deleteCategory,
+  findAllByAccountId, updateCategory,
+} from '../../services/category';
 import Category, { validateCategory } from '../../types/Category';
 
 const categoryRouter = Router();
 
 categoryRouter.get('/', async (req:Request, res:Response) => {
-  const categories = await query({
-    name: 'category-get-all',
-    text: 'SELECT * FROM category',
-  })
-    .then(({ rows }) => rows);
+  const { auth: { id: accountId }} = <any>req;
+
+  const categories = await findAllByAccountId(accountId);
 
   res.json(categories);
 });
 
-categoryRouter.put('/', async (req:Request, res:Response, next:NextFunction) => {
+categoryRouter.put('/', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+
   const {
-    accountId,
     name,
     description,
     colorId,
   } = req.body;
 
-  const { valid, error } = validateCategory(req.body as Category);
+  const categoryToSave:Category = {
+    name,
+    description,
+    colorId,
+  } as Category;
+
+  const { valid, error } = validateCategory(categoryToSave);
 
   if (!valid) {
     return res.json({
@@ -36,23 +43,22 @@ categoryRouter.put('/', async (req:Request, res:Response, next:NextFunction) => 
     });
   }
 
-  const category:Category|void = await query({
-    name: 'category-put',
-    text: `INSERT INTO "category" ("accountId","name","description","colorId","createdAt","updatedAt")
-           VALUES ($1,$2,$3,$4,now(),now())
-           RETURNING *;`,
-    values: [accountId, name, description, colorId],
-  })
-    .then(({ rows: [category] }) => category as Category)
-    .catch(next);
+  const {
+    success,
+    category: savedCategory,
+  } = await addCategory(accountId, categoryToSave);
 
-  return res.json(category);
+  return res.json({
+    success,
+    category: savedCategory,
+  });
 });
 
-categoryRouter.post('/', async (req:Request, res:Response, next:NextFunction) => {
+categoryRouter.post('/', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+
   const {
     id,
-    accountId,
     name,
     description,
     colorId,
@@ -65,7 +71,14 @@ categoryRouter.post('/', async (req:Request, res:Response, next:NextFunction) =>
     });
   }
 
-  const { valid, error } = validateCategory(req.body as Category);
+  const categoryToUpdate:Category = {
+    id,
+    name,
+    description,
+    colorId,
+  } as Category;
+
+  const { valid, error } = validateCategory(categoryToUpdate);
 
   if (!valid) {
     return res.json({
@@ -74,26 +87,15 @@ categoryRouter.post('/', async (req:Request, res:Response, next:NextFunction) =>
     });
   }
 
-  const categoryUpdated:boolean|void = await query({
-    name: 'category-post',
-    text: `UPDATE "category"
-           SET "accountId"=$2,
-               "name"=$3,
-               "description"=$4,
-               "colorId"=$5,
-               "updatedAt"=now()
-           WHERE id=$1;`,
-    values: [id, accountId, name, description, colorId],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const categoryUpdated:boolean|void = await updateCategory(accountId, categoryToUpdate);
 
   return res.json({
     success: categoryUpdated === true,
   });
 });
 
-categoryRouter.delete('/', async (req:Request, res:Response, next:NextFunction) => {
+categoryRouter.delete('/', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
   const { id } = req.body;
 
   if (!id) {
@@ -103,14 +105,7 @@ categoryRouter.delete('/', async (req:Request, res:Response, next:NextFunction) 
     });
   }
 
-  const categoryDeleted:boolean|void = await query({
-    name: 'category-delete',
-    text: `DELETE FROM "category"
-           WHERE id=$1;`,
-    values: [id],
-  })
-    .then(({ rowCount }) => rowCount === 1)
-    .catch(next);
+  const categoryDeleted:boolean|void = await deleteCategory(accountId, id);
 
   return res.json({
     success: categoryDeleted === true,

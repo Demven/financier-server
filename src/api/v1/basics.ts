@@ -9,12 +9,12 @@ import Category from '../../types/Category';
 const basicsRouter = Router();
 
 basicsRouter.get('/', async (req:Request, res:Response) => {
-  const { auth: { id }} = <any>req;
+  const { auth: { id: accountId }} = <any>req;
 
-  const account:Account = await accountService.findById(id);
+  const account:Account = await accountService.findById(accountId);
   const defaultColors:Color[] = await colorService.findAllByAccountId(null);
-  const customColors:Color[] = await colorService.findAllByAccountId(id);
-  const categories:Category[] = await categoryService.findAllByAccountId(id);
+  const customColors:Color[] = await colorService.findAllByAccountId(accountId);
+  const categories:Category[] = await categoryService.findAllByAccountId(accountId);
 
   delete account.password;
 
