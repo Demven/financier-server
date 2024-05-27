@@ -14,6 +14,17 @@ export async function getExpensesTotals (accountId:number):Promise<Totals> {
     .then(({ rows }) => rows?.[0]?.totals as Totals);
 }
 
+export function createExpensesTotals (accountId:number, totals:Totals):Promise<Totals> {
+  return query({
+    name: `expenses-totals-create-for-account-${accountId}`,
+    text: `INSERT INTO "expensesTotals" ("accountId","totals","createdAt","updatedAt")
+           VALUES ($1,$2,now(),now())
+           RETURNING *;`,
+    values: [accountId, JSON.stringify(totals)],
+  })
+    .then(({ rows: [expensesTotals] }) => expensesTotals.totals as Totals);
+}
+
 export async function saveExpensesTotals (accountId:number, totals:Totals):Promise<boolean> {
   const totalsUpdated:boolean|void = await query({
     name: `expenses-totals-save-for-account-id-${accountId}`,

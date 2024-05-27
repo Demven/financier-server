@@ -28,6 +28,17 @@ export async function saveSavingsTotals (accountId: number, totals: Totals):Prom
   return totalsUpdated === true;
 }
 
+export function createSavingsTotals (accountId:number, totals:Totals):Promise<Totals> {
+  return query({
+    name: `savings-totals-create-for-account-${accountId}`,
+    text: `INSERT INTO "savingsTotals" ("accountId","totals","createdAt","updatedAt")
+           VALUES ($1,$2,now(),now())
+           RETURNING *;`,
+    values: [accountId, JSON.stringify(totals)],
+  })
+    .then(({ rows: [savingsTotals] }) => savingsTotals.totals as Totals);
+}
+
 export async function calculateSavingsTotalsForAccount (accountId:number):Promise<Totals> {
   const allSavings:Saving[] = await findSavingsAmountsByAccountId(accountId);
 

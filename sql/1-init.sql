@@ -1,20 +1,22 @@
 CREATE TABLE IF NOT EXISTS "account" (
-  "id" serial not null,
-  "firstName" varchar not null,
-  "lastName" varchar not null,
-  "email" varchar not null,
-  "password" varchar not null,
-  "language" varchar not null,
-  "currencyType" varchar not null,
-  "currencySymbol" varchar not null,
+  "id" serial NOT NULL,
+  "firstName" varchar NOT NULL,
+  "lastName" varchar NOT NULL,
+  "email" varchar NOT NULL,
+  "password" varchar NOT NULL,
+  "language" varchar NOT NULL,
+  "currencyType" varchar NOT NULL,
+  "currencySymbol" varchar NOT NULL,
+  "isConfirmed" bool NOT NULL DEFAULT false,
+  "isReset" bool NOT NULL DEFAULT false,
   "createdAt" timestamptz,
   "updatedAt" timestamptz,
   unique("email"),
   CONSTRAINT "account_pkey" PRIMARY KEY ("id")
 );
 
-INSERT INTO "account" ("firstName","lastName","email","password","language","currencyType","currencySymbol","createdAt","updatedAt")
-   VALUES ('Dmitry','Salnikov','dmitry_salnikov@protonmail.com','financier','en','USD','$',now(),now());
+INSERT INTO "account" ("firstName","lastName","email","password","language","currencyType","currencySymbol","isConfirmed","createdAt","updatedAt")
+   VALUES ('Dmitry','Salnikov','dmitry_salnikov@protonmail.com','financier','en','USD','$',true,now(),now());
 
 CREATE TABLE IF NOT EXISTS "color" (
   "id" serial not null,
@@ -131,7 +133,8 @@ CREATE TABLE IF NOT EXISTS "expensesTotals" (
   "totals" jsonb not null,
   "createdAt" timestamptz,
   "updatedAt" timestamptz,
-  CONSTRAINT "expensesTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id")
+  CONSTRAINT "expensesTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id"),
+  CONSTRAINT "expensesTotals_pkey" PRIMARY KEY ("id")
 );
 
 INSERT INTO "expensesTotals" ("accountId","totals","createdAt","updatedAt")
@@ -143,7 +146,8 @@ CREATE TABLE IF NOT EXISTS "incomesTotals" (
   "totals" jsonb not null,
   "createdAt" timestamptz,
   "updatedAt" timestamptz,
-  CONSTRAINT "incomesTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id")
+  CONSTRAINT "incomesTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id"),
+  CONSTRAINT "incomesTotals_pkey" PRIMARY KEY ("id")
 );
 
 INSERT INTO "incomesTotals" ("accountId","totals","createdAt","updatedAt")
@@ -155,7 +159,8 @@ CREATE TABLE IF NOT EXISTS "savingsTotals" (
   "totals" jsonb not null,
   "createdAt" timestamptz,
   "updatedAt" timestamptz,
-  CONSTRAINT "savingsTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id")
+  CONSTRAINT "savingsTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id"),
+  CONSTRAINT "savingsTotals_pkey" PRIMARY KEY ("id")
 );
 
 INSERT INTO "savingsTotals" ("accountId","totals","createdAt","updatedAt")
@@ -167,7 +172,8 @@ CREATE TABLE IF NOT EXISTS "investmentsTotals" (
   "totals" jsonb not null,
   "createdAt" timestamptz,
   "updatedAt" timestamptz,
-  CONSTRAINT "investmentsTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id")
+  CONSTRAINT "investmentsTotals_accountId" FOREIGN KEY ("accountId") REFERENCES "account"("id"),
+  CONSTRAINT "investmentsTotals_pkey" PRIMARY KEY ("id")
 );
 
 INSERT INTO "investmentsTotals" ("accountId","totals","createdAt","updatedAt")

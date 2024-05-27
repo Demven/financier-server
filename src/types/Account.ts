@@ -50,6 +50,8 @@ export default interface Account {
   language: Language;
   currencyType: CurrencyType;
   currencySymbol: CurrencySymbol;
+  isConfirmed: boolean;
+  isReset: boolean;
   createdAt: string;
   updatedAt: string;
 }

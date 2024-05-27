@@ -5,20 +5,13 @@ import {
   NextFunction,
 } from 'express';
 import { query } from '../../dal';
+import { findAll } from '../../services/account';
 import Account, { validateAccount } from '../../types/Account';
 
 const accountRouter = Router();
 
 accountRouter.get('/', async (req:Request, res:Response) => {
-  const accounts:Account[] = await query({
-    name: 'account-get-all',
-    text: 'SELECT * FROM account',
-  })
-    .then(({ rows }) => rows as Account[])
-    .then((accounts) => accounts.map(account => ({
-      ...account,
-      password: '***',
-    })));
+  const accounts:Account[] = await findAll();
 
   res.json(accounts);
 });

@@ -21,9 +21,46 @@ export async function findById (id:number):Promise<Account> {
 
 export async function findByEmail (email:string):Promise<Account> {
   return query({
-    name: 'account-get-one-by-email-and-password',
+    name: `account-get-one-by-email-${email}`,
     text: 'SELECT * FROM account WHERE "email"=$1;',
     values: [email],
   })
     .then(({ rows: [account] }) => account as Account);
+}
+
+export async function findAll ():Promise<Account[]> {
+  return query({
+    name: 'account-get-all',
+    text: 'SELECT * FROM account',
+  })
+    .then(({ rows }) => rows as Account[])
+    .then((accounts) => accounts.map(account => ({
+      ...account,
+      password: '***',
+    })));
+}
+
+
+export async function createAccount (account:Account):Promise<Account> {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    language,
+    currencyType,
+    currencySymbol,
+  } = account;
+
+  return query({
+    name: 'account-create',
+    text: `INSERT INTO "account" ("firstName","lastName","email","password","language","currencyType","currencySymbol","createdAt","updatedAt")
+           VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())
+           RETURNING *;`,
+    values: [firstName, lastName, email, password, language, currencyType, currencySymbol],
+  }, { doNotLogValues: true })
+    .then(({ rows: [account] }) => ({
+      ...account,
+      password: '***',
+    }) as Account);
 }
