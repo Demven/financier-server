@@ -40,7 +40,6 @@ export async function findAll ():Promise<Account[]> {
     })));
 }
 
-
 export async function createAccount (account:Account):Promise<Account> {
   const {
     firstName,
@@ -63,4 +62,16 @@ export async function createAccount (account:Account):Promise<Account> {
       ...account,
       password: '***',
     }) as Account);
+}
+
+export async function confirmEmail (id:number, email:string):Promise<boolean> {
+  return query({
+    name: `account-confirm-email-${email}`,
+    text: `UPDATE "account"
+           SET "isConfirmed"=true,
+               "updatedAt"=now()
+           WHERE id=$1;`,
+    values: [id],
+  })
+    .then(({ rowCount }) => rowCount === 1);
 }
