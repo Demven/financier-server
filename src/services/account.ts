@@ -75,3 +75,15 @@ export async function confirmEmail (id:number, email:string):Promise<boolean> {
   })
     .then(({ rowCount }) => rowCount === 1);
 }
+
+export async function resetPassword (id:number):Promise<boolean> {
+  return query({
+    name: `account-reset-password-for-account-${id}`,
+    text: `UPDATE "account"
+           SET "isReset"=true,
+               "updatedAt"=now()
+           WHERE id=$1;`,
+    values: [id],
+  })
+    .then(({ rowCount }) => rowCount === 1);
+}

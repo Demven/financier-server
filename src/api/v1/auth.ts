@@ -15,6 +15,7 @@ import { CURRENCIES, CURRENCY_SYMBOL } from '../../utils/currency';
 import { sendTemplateEmail } from '../../services/email';
 import SignInTokenPayload from '../../types/SignInTokenPayload';
 import ConfirmEmailTokenPayload from '../../types/ConfirmEmailTokenPayload';
+import ResetPasswordTokenPayload from '../../types/ResetPasswordTokenPayload';
 import Category from '../../types/Category';
 
 const { JWT_SECRET } = process.env;
@@ -70,9 +71,9 @@ authRouter.post('/sign-in', async (req:Request, res:Response) => {
   if (!account || account.email !== email) {
     return res.status(400).send('Wrong email or password');
   } else if (!account.isConfirmed) {
-    return res.status(400).send('Please confirm your email address before signing-in');
+    return res.status(400).send('Confirm your email address before signing in');
   } else if (account.isReset) {
-    return res.status(400).send('Please set the new password before signing-in');
+    return res.status(400).send('Set the new password before signing in');
   } else {
     return res.json({ token: getSignInToken(account) });
   }
@@ -213,6 +214,42 @@ authRouter.post('/confirm-email', async (req:Request, res:Response) => {
         error: 'User not found',
       });
     }
+  } else {
+    return res.json({
+      success: false,
+      error: 'Invalid token',
+    });
+  }
+});
+
+authRouter.post('/reset-password', async (req:Request, res:Response) => {
+  const token = req.body.token;
+
+  if (!token) {
+    return res.status(400).send('You must provide a JWT token as a body parameter "token"');
+  }
+
+  const tokenPayload:ResetPasswordTokenPayload|null = <ResetPasswordTokenPayload>decodeToken(token);
+  if (tokenPayload) {
+    const { email } = tokenPayload;
+
+    const account:Account = await accountService.findByEmail(email);
+
+    if (!account) {
+      return res.json({
+        success: false,
+        error: 'User not found',
+      });
+    } else if (account.isReset) {
+      return res.json({
+        success: false,
+        error: 'Password has been reset already, check your email inbox for instructions',
+      });
+    }
+
+    const reset:boolean = await accountService.resetPassword(account.id);
+
+    return res.json({ success: reset });
   } else {
     return res.json({
       success: false,
