@@ -76,14 +76,27 @@ export async function confirmEmail (id:number, email:string):Promise<boolean> {
     .then(({ rowCount }) => rowCount === 1);
 }
 
-export async function resetPassword (id:number):Promise<boolean> {
+export async function resetPassword (accountId:number):Promise<boolean> {
   return query({
-    name: `account-reset-password-for-account-${id}`,
+    name: `account-reset-password-for-account-${accountId}`,
     text: `UPDATE "account"
            SET "isReset"=true,
                "updatedAt"=now()
            WHERE id=$1;`,
-    values: [id],
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount === 1);
+}
+
+export async function setUpNewPassword (accountId:number, password:string):Promise<boolean> {
+  return query({
+    name: `account-set-up-new-password-for-account-${accountId}`,
+    text: `UPDATE "account"
+           SET "isReset"=false,
+               "password"=$2,
+               "updatedAt"=now()
+           WHERE id=$1;`,
+    values: [accountId, password],
   })
     .then(({ rowCount }) => rowCount === 1);
 }

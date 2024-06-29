@@ -12,13 +12,16 @@ import * as incomesTotalsService from '../../services/incomesTotals';
 import * as savingsTotalsService from '../../services/savingsTotals';
 import * as investmentsTotalsService from '../../services/investmentsTotals';
 import { CURRENCIES, CURRENCY_SYMBOL } from '../../utils/currency';
-import { sendTemplateEmail } from '../../services/email';
+import { sendTemplateEmail, EMAIL_TEMPLATE } from '../../services/email';
 import SignInTokenPayload from '../../types/SignInTokenPayload';
 import ConfirmEmailTokenPayload from '../../types/ConfirmEmailTokenPayload';
 import ResetPasswordTokenPayload from '../../types/ResetPasswordTokenPayload';
 import Category from '../../types/Category';
 
-const { JWT_SECRET } = process.env;
+const {
+  UI_HOST,
+  JWT_SECRET,
+} = process.env;
 
 const authRouter = Router();
 
@@ -41,6 +44,14 @@ function getConfirmationToken (account:Account):string {
       firstName: account.firstName,
       lastName: account.lastName,
     },
+    <string>JWT_SECRET,
+    { expiresIn: 3 * ONE_DAY },
+  );
+}
+
+function getResetPasswordToken (email:string):string {
+  return jwt.sign(
+    { email },
     <string>JWT_SECRET,
     { expiresIn: 3 * ONE_DAY },
   );
@@ -159,11 +170,11 @@ authRouter.put('/register', async (req:Request, res:Response) => {
 
   const token = getConfirmationToken(createdAccount);
 
-  const { Message: emailStatus } = await sendTemplateEmail({
+  const { Message: emailStatus } = await sendTemplateEmail(EMAIL_TEMPLATE.CONFIRM_EMAIL, {
     fromEmail: 'noreply@thefinancier.app',
-    toEmail:'support@thefinancier.app', // TODO: use real email
+    toEmail: email,
     fullName: `${firstName} ${lastName}`,
-    token,
+    actionUrl: `${UI_HOST}/confirm-email?token=${token}`,
   })
     .catch((error) => {
       console.error(error);
@@ -223,10 +234,51 @@ authRouter.post('/confirm-email', async (req:Request, res:Response) => {
 });
 
 authRouter.post('/reset-password', async (req:Request, res:Response) => {
-  const token = req.body.token;
+  const email = req.body.email;
+
+  if (!email) {
+    return res.status(400).send('You must provide an email address as a body parameter "email"');
+  }
+
+  const account:Account = await accountService.findByEmail(email);
+
+  if (!account) {
+    return res.json({
+      success: false,
+      error: 'User not found',
+    });
+  }
+
+  const reset:boolean = await accountService.resetPassword(account.id);
+
+  const token = getResetPasswordToken(email);
+
+  const { Message: emailStatus } = await sendTemplateEmail(EMAIL_TEMPLATE.RESET_PASSWORD, {
+    fromEmail: 'noreply@thefinancier.app',
+    toEmail: email,
+    fullName: `${account.firstName} ${account.lastName}`,
+    actionUrl: `${UI_HOST}/reset-password?token=${token}`,
+  })
+    .catch((error) => {
+      console.error(error);
+      return { Message: error.message };
+    });
+
+  if (emailStatus !== 'OK') {
+    return res.json({ success: false, error: emailStatus });
+  }
+
+  return res.json({ success: reset });
+});
+
+authRouter.post('/set-up-new-password', async (req:Request, res:Response) => {
+  const { token, password } = req.body;
 
   if (!token) {
     return res.status(400).send('You must provide a JWT token as a body parameter "token"');
+  }
+  if (!password) {
+    return res.status(400).send('You must provide the new password as a body parameter "password"');
   }
 
   const tokenPayload:ResetPasswordTokenPayload|null = <ResetPasswordTokenPayload>decodeToken(token);
@@ -240,16 +292,11 @@ authRouter.post('/reset-password', async (req:Request, res:Response) => {
         success: false,
         error: 'User not found',
       });
-    } else if (account.isReset) {
-      return res.json({
-        success: false,
-        error: 'Password has been reset already, check your email inbox for instructions',
-      });
     }
 
-    const reset:boolean = await accountService.resetPassword(account.id);
+    const success:boolean = await accountService.setUpNewPassword(account.id, password);
 
-    return res.json({ success: reset });
+    return res.json({ success });
   } else {
     return res.json({
       success: false,
