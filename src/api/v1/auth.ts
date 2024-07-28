@@ -104,7 +104,11 @@ authRouter.post('/validate-token', async (req:Request, res:Response) => {
     const account:Account = await accountService.findById(id);
 
     if (account?.email === email) {
-      return res.json({ success: true, payload: tokenPayload });
+      return res.json({
+        success: true,
+        payload: tokenPayload,
+        refreshToken: getSignInToken(account),
+      });
     } else if (!account.isConfirmed) {
       return res.status(400).send('Please confirm your email address before signing-in');
     } else if (account.isReset) {

@@ -1,7 +1,7 @@
 import { PoolClient, Pool, PoolConfig } from 'pg';
 
 const {
-  NODE_ENV,
+  POSTGRES_URL,
   POSTGRES_HOST,
   POSTGRES_USER,
   POSTGRES_DATABASE,
@@ -11,20 +11,20 @@ const {
 
 let pool:Pool;
 
-const connectionConfig:PoolConfig = NODE_ENV === 'development'
+const connectionConfig:PoolConfig = POSTGRES_URL
   ? <PoolConfig>{
-    user: POSTGRES_USER,
-    host: POSTGRES_HOST,
-    database: POSTGRES_DATABASE,
-    password: POSTGRES_PASSWORD,
-    port: POSTGRES_PORT,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  }
+      connectionString: POSTGRES_URL,
+    }
   : <PoolConfig>{
-    connectionString: process.env.POSTGRES_URL
-  };
+      user: POSTGRES_USER,
+      host: POSTGRES_HOST,
+      database: POSTGRES_DATABASE,
+      password: POSTGRES_PASSWORD,
+      port: POSTGRES_PORT,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    };
 
 export async function connectToDatabase() {
   console.info(`Connect to the database: ${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}...`);
