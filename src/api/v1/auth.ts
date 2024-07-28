@@ -30,7 +30,11 @@ const ONE_WEEK = 7 * ONE_DAY;
 
 function getSignInToken (account:Account):string {
   return jwt.sign(
-    { id: account.id, email: account.email },
+    {
+      id: account.id,
+      email: account.email,
+      signedInDate: +(new Date()),
+    },
     <string>JWT_SECRET,
     { expiresIn: ONE_WEEK },
   );
