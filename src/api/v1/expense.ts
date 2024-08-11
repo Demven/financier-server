@@ -9,7 +9,9 @@ import {
   deleteExpense,
   findAllByAccountIdForYear,
 } from '../../services/expense';
+import { groupItemsByYearMonthWeek } from '../../services/items';
 import Expense, { validateExpense } from '../../types/Expense';
+import GroupedItems from '../../types/GroupedItems';
 
 const expenseRouter = Router();
 
@@ -21,8 +23,9 @@ expenseRouter.get('/', async (req:Request, res:Response) => {
     : new Date().getFullYear();
 
   const expenses = await findAllByAccountIdForYear(accountId, year);
+  const expensesGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(expenses);
 
-  res.json(expenses);
+  res.json(expensesGroupedByYearMonthWeek);
 });
 
 expenseRouter.put('/', async (req:Request, res:Response) => {

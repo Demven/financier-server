@@ -9,7 +9,9 @@ import {
   updateIncome,
   deleteIncome,
 } from '../../services/income';
+import { groupItemsByYearMonthWeek } from '../../services/items';
 import Income, { validateIncome } from '../../types/Income';
+import GroupedItems from '../../types/GroupedItems';
 
 const incomeRouter = Router();
 
@@ -21,8 +23,9 @@ incomeRouter.get('/', async (req:Request, res:Response) => {
     : new Date().getFullYear();
 
   const incomes = await findAllByAccountIdForYear(accountId, year);
+  const incomesGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(incomes);
 
-  res.json(incomes);
+  res.json(incomesGroupedByYearMonthWeek);
 });
 
 incomeRouter.put('/', async (req:Request, res:Response) => {

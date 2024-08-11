@@ -9,7 +9,9 @@ import {
   updateInvestment,
   deleteInvestment,
 } from '../../services/investment';
+import { groupItemsByYearMonthWeek } from '../../services/items';
 import Investment, { validateInvestment } from '../../types/Investment';
+import GroupedItems from '../../types/GroupedItems';
 
 const investmentRouter = Router();
 
@@ -21,8 +23,9 @@ investmentRouter.get('/', async (req:Request, res:Response) => {
     : new Date().getFullYear();
 
   const investments = await findAllByAccountIdForYear(accountId, year);
+  const investmentsGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(investments);
 
-  res.json(investments);
+  res.json(investmentsGroupedByYearMonthWeek);
 });
 
 investmentRouter.put('/', async (req:Request, res:Response) => {

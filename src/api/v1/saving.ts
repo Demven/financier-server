@@ -9,7 +9,9 @@ import {
   updateSaving,
   deleteSaving,
 } from '../../services/saving';
+import { groupItemsByYearMonthWeek } from '../../services/items';
 import Saving, { validateSaving } from '../../types/Saving';
+import GroupedItems from '../../types/GroupedItems';
 
 const savingRouter = Router();
 
@@ -21,8 +23,9 @@ savingRouter.get('/', async (req:Request, res:Response) => {
     : new Date().getFullYear();
 
   const savings = await findAllByAccountIdForYear(accountId, year);
+  const savingsGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(savings);
 
-  res.json(savings);
+  res.json(savingsGroupedByYearMonthWeek);
 });
 
 savingRouter.put('/', async (req:Request, res:Response) => {
