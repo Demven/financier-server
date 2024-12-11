@@ -4,8 +4,11 @@ import {
   Response,
 } from 'express';
 import {
-  addCategory, deleteCategory,
-  findAllByAccountId, updateCategory,
+  findOneById,
+  addCategory,
+  deleteCategory,
+  findAllByAccountId,
+  updateCategory,
 } from '../../services/category';
 import Category, { validateCategory } from '../../types/Category';
 
@@ -17,6 +20,15 @@ categoryRouter.get('/', async (req:Request, res:Response) => {
   const categories = await findAllByAccountId(accountId);
 
   res.json(categories);
+});
+
+categoryRouter.get('/:id', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+  const { id: categoryId } = req.params;
+
+  const category = await findOneById(accountId, Number(categoryId));
+
+  res.json(category);
 });
 
 categoryRouter.put('/', async (req:Request, res:Response) => {

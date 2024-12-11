@@ -3,11 +3,11 @@ import { getIncomesTotals, patchIncomesTotals } from './incomesTotals';
 import Income from '../types/Income';
 import Totals from '../types/Totals';
 
-export function findById (id:number):Promise<Income> {
+export function findOneById (accountId:number, id:number):Promise<Income> {
   return query({
-    name: `income-get-all-by-id-${id}`,
-    text: 'SELECT * FROM "income" WHERE "id"=$1;',
-    values: [id],
+    name: `income-get-one-by-id-${id}-for-account-id-${accountId}`,
+    text: 'SELECT * FROM "income" WHERE "accountId"=$1 AND "id"=$2;',
+    values: [accountId, id],
   })
     .then(({ rows }) => rows[0] as Income);
 }
@@ -96,7 +96,7 @@ export async function updateIncome (accountId:number, income:Income):Promise<{ s
   } = income;
 
   const currentTotals:Totals = await getIncomesTotals(accountId);
-  const currentIncome:Income = await findById(id);
+  const currentIncome:Income = await findOneById(accountId, id);
 
   return query({
     name: 'income-update',
@@ -138,7 +138,7 @@ export async function updateIncome (accountId:number, income:Income):Promise<{ s
 }
 
 export async function deleteIncome (accountId:number, id:number):Promise<{ success:boolean; totals:Totals; }> {
-  const { year, month, week }:Income = await findById(id);
+  const { year, month, week }:Income = await findOneById(accountId, id);
 
   const currentTotals:Totals = await getIncomesTotals(accountId);
 

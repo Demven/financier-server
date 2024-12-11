@@ -4,6 +4,7 @@ import {
   Response,
 } from 'express';
 import {
+  findOneById,
   findAllByAccountIdForYear,
   addInvestment,
   updateInvestment,
@@ -26,6 +27,15 @@ investmentRouter.get('/', async (req:Request, res:Response) => {
   const investmentsGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(investments);
 
   res.json(investmentsGroupedByYearMonthWeek);
+});
+
+investmentRouter.get('/:id', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+  const { id: investmentId } = req.params;
+
+  const investment = await findOneById(accountId, Number(investmentId));
+
+  res.json(investment);
 });
 
 investmentRouter.put('/', async (req:Request, res:Response) => {

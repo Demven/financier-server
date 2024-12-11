@@ -4,6 +4,7 @@ import {
   Response,
 } from 'express';
 import {
+  findOneById,
   addExpense,
   updateExpense,
   deleteExpense,
@@ -26,6 +27,15 @@ expenseRouter.get('/', async (req:Request, res:Response) => {
   const expensesGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(expenses);
 
   res.json(expensesGroupedByYearMonthWeek);
+});
+
+expenseRouter.get('/:id', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+  const { id: expenseId } = req.params;
+
+  const expense = await findOneById(accountId, Number(expenseId));
+
+  res.json(expense);
 });
 
 expenseRouter.put('/', async (req:Request, res:Response) => {

@@ -3,11 +3,11 @@ import { getSavingsTotals, patchSavingsTotals } from './savingsTotals';
 import Saving from '../types/Saving';
 import Totals from '../types/Totals';
 
-export function findById (id:number):Promise<Saving> {
+export function findOneById (accountId:number, id:number):Promise<Saving> {
   return query({
-    name: `saving-get-all-by-id-${id}`,
-    text: 'SELECT * FROM "saving" WHERE "id"=$1;',
-    values: [id],
+    name: `saving-get-one-by-id-${id}-for-account-id-${accountId}`,
+    text: 'SELECT * FROM "saving" WHERE "accountId"=$1 AND "id"=$2;',
+    values: [accountId, id],
   })
     .then(({ rows }) => rows[0] as Saving);
 }
@@ -96,7 +96,7 @@ export async function updateSaving (accountId:number, saving:Saving):Promise<{ s
   } = saving;
 
   const currentTotals:Totals = await getSavingsTotals(accountId);
-  const currentSaving:Saving = await findById(id);
+  const currentSaving:Saving = await findOneById(accountId, id);
 
   return query({
     name: 'saving-update',
@@ -138,7 +138,7 @@ export async function updateSaving (accountId:number, saving:Saving):Promise<{ s
 }
 
 export async function deleteSaving (accountId:number, id:number):Promise<{ success:boolean; totals:Totals; }> {
-  const { year, month, week }:Saving = await findById(id);
+  const { year, month, week }:Saving = await findOneById(accountId, id);
 
   const currentTotals:Totals = await getSavingsTotals(accountId);
 

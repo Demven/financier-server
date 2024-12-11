@@ -3,11 +3,11 @@ import { getInvestmentsTotals, patchInvestmentsTotals } from './investmentsTotal
 import Investment from '../types/Investment';
 import Totals from '../types/Totals';
 
-export function findById (id:number):Promise<Investment> {
+export function findOneById (accountId:number, id:number):Promise<Investment> {
   return query({
-    name: `investment-get-all-by-id-${id}`,
-    text: 'SELECT * FROM "investment" WHERE "id"=$1;',
-    values: [id],
+    name: `investment-get-one-by-id-${id}-for-account-id-${accountId}`,
+    text: 'SELECT * FROM "investment" WHERE "accountId"=$1 AND "id"=$2;',
+    values: [accountId, id],
   })
     .then(({ rows }) => rows[0] as Investment);
 }
@@ -100,7 +100,7 @@ export async function updateInvestment (accountId:number, investment:Investment)
   } = investment;
 
   const currentTotals:Totals = await getInvestmentsTotals(accountId);
-  const currentInvestment:Investment = await findById(id);
+  const currentInvestment:Investment = await findOneById(accountId, id);
 
   return query({
     name: 'investment-update',
@@ -144,7 +144,7 @@ export async function updateInvestment (accountId:number, investment:Investment)
 }
 
 export async function deleteInvestment (accountId:number, id:number):Promise<{ success:boolean; totals:Totals; }> {
-  const { year, month, week }:Investment = await findById(id);
+  const { year, month, week }:Investment = await findOneById(accountId, id);
 
   const currentTotals:Totals = await getInvestmentsTotals(accountId);
 

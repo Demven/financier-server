@@ -1,6 +1,15 @@
 import { query } from '../dal';
 import Category from '../types/Category';
 
+export function findOneById (accountId:number, id:number):Promise<Category> {
+  return query({
+    name: `category-get-one-by-id-${id}-for-account-id-${accountId}`,
+    text: 'SELECT * FROM "category" WHERE "accountId"=$1 AND "id"=$2;',
+    values: [accountId, id],
+  })
+    .then(({ rows }) => rows[0] as Category);
+}
+
 export async function findAllByAccountId (accountId:number):Promise<Category[]> {
   return query({
     name: `category-get-all-by-account-${accountId}`,

@@ -4,6 +4,7 @@ import {
   Response,
 } from 'express';
 import {
+  findOneById,
   findAllByAccountIdForYear,
   addSaving,
   updateSaving,
@@ -26,6 +27,15 @@ savingRouter.get('/', async (req:Request, res:Response) => {
   const savingsGroupedByYearMonthWeek:GroupedItems = groupItemsByYearMonthWeek(savings);
 
   res.json(savingsGroupedByYearMonthWeek);
+});
+
+savingRouter.get('/:id', async (req:Request, res:Response) => {
+  const { auth: { id: accountId }} = <any>req;
+  const { id: savingId } = req.params;
+
+  const saving = await findOneById(accountId, Number(savingId));
+
+  res.json(saving);
 });
 
 savingRouter.put('/', async (req:Request, res:Response) => {
