@@ -12,8 +12,10 @@ basicsRouter.get('/', async (req:Request, res:Response) => {
   const { auth: { id: accountId }} = <any>req;
 
   const account:Account = await accountService.findById(accountId);
+
   const defaultColors:Color[] = await colorService.findAllByAccountId(null);
   const customColors:Color[] = await colorService.findAllByAccountId(accountId);
+
   const categories:Category[] = await categoryService.findAllByAccountId(accountId);
 
   delete account.password;

@@ -95,3 +95,13 @@ export async function patchIncomesTotals (
 
   return patchedTotals;
 }
+
+export function deleteAllIncomesTotalsForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `incomes-totals-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "incomesTotals"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
+}

@@ -85,3 +85,14 @@ export async function deleteColor (accountId:number, id:number):Promise<boolean>
   })
     .then(({ rowCount }) => rowCount === 1);
 }
+
+export function deleteAllCustomColorsForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `color-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "color"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
+}
+
