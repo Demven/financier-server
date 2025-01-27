@@ -90,3 +90,13 @@ export async function patchSavingsTotals (
 
   return patchedTotals;
 }
+
+export function deleteAllSavingsTotalsForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `savings-totals-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "savingsTotals"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
+}

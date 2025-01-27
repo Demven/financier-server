@@ -174,3 +174,13 @@ export async function deleteExpense (accountId:number, id:number):Promise<{ succ
       };
     });
 }
+
+export function deleteAllExpensesForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `expense-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "expense"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
+}

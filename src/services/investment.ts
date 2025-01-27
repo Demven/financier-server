@@ -149,7 +149,7 @@ export async function deleteInvestment (accountId:number, id:number):Promise<{ s
   const currentTotals:Totals = await getInvestmentsTotals(accountId);
 
   return query({
-    name: 'investment-delete',
+    name: `investment-delete-for-account-${accountId}`,
     text: `DELETE FROM "investment"
            WHERE id=$1;`,
     values: [id],
@@ -176,4 +176,14 @@ export async function deleteInvestment (accountId:number, id:number):Promise<{ s
         totals: patchedTotals,
       };
     });
+}
+
+export function deleteAllInvestmentsForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `investment-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "investment"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
 }

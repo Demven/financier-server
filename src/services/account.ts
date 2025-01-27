@@ -64,6 +64,41 @@ export async function createAccount (account:Account):Promise<Account> {
     }) as Account);
 }
 
+export async function updateAccount (account:Account):Promise<boolean> {
+  const {
+    id,
+    firstName,
+    lastName,
+    language,
+    currencyType,
+    currencySymbol,
+  } = account;
+
+  return query({
+    name: `account-update-for-id-${id}`,
+    text: `UPDATE "account"
+           SET "firstName"=$2,
+               "lastName"=$3,
+               "language"=$4,
+               "currencyType"=$5,
+               "currencySymbol"=$6,
+               "updatedAt"=now()
+           WHERE id=$1;`,
+    values: [id, firstName, lastName, language, currencyType, currencySymbol],
+  })
+    .then(({ rowCount }) => rowCount === 1);
+}
+
+export async function deleteAccount (accountId:number):Promise<boolean> {
+  return query({
+    name: 'account-delete',
+    text: `DELETE FROM "account"
+           WHERE id=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount === 1);
+}
+
 export async function confirmEmail (id:number, email:string):Promise<boolean> {
   return query({
     name: `account-confirm-email-${email}`,

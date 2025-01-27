@@ -84,3 +84,13 @@ export async function deleteCategory (accountId:number, id:number):Promise<boole
     .then(({ rowCount }) => rowCount === 1);
 }
 
+export function deleteAllCategoriesForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `category-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "category"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
+}
+

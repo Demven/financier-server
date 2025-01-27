@@ -143,7 +143,7 @@ export async function deleteIncome (accountId:number, id:number):Promise<{ succe
   const currentTotals:Totals = await getIncomesTotals(accountId);
 
   return query({
-    name: 'income-delete',
+    name: `income-delete-for-account-${accountId}`,
     text: `DELETE FROM "income"
            WHERE id=$1;`,
     values: [id],
@@ -170,4 +170,14 @@ export async function deleteIncome (accountId:number, id:number):Promise<{ succe
         totals: patchedTotals,
       };
     });
+}
+
+export function deleteAllIncomesForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `income-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "income"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
 }

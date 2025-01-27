@@ -143,7 +143,7 @@ export async function deleteSaving (accountId:number, id:number):Promise<{ succe
   const currentTotals:Totals = await getSavingsTotals(accountId);
 
   return query({
-    name: 'saving-delete',
+    name: `saving-delete-for-account-${accountId}`,
     text: `DELETE FROM "saving"
            WHERE id=$1;`,
     values: [id],
@@ -170,4 +170,14 @@ export async function deleteSaving (accountId:number, id:number):Promise<{ succe
         totals: patchedTotals,
       };
     });
+}
+
+export function deleteAllSavingsForAccount (accountId:number):Promise<number> {
+  return query({
+    name: `saving-delete-all-for-account-${accountId}`,
+    text: `DELETE FROM "saving"
+           WHERE "accountId"=$1;`,
+    values: [accountId],
+  })
+    .then(({ rowCount }) => rowCount);
 }
