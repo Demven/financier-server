@@ -11,6 +11,8 @@ const {
 
 let pool:Pool;
 
+console.info('process.env', process.env, 'DATABASE_URL', DATABASE_URL);
+
 const connectionConfig:PoolConfig = DATABASE_URL
   ? <PoolConfig>{
       connectionString: DATABASE_URL,
