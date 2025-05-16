@@ -1,7 +1,7 @@
 import { PoolClient, Pool, PoolConfig } from 'pg';
 
 const {
-  POSTGRES_URL,
+  DATABASE_URL,
   POSTGRES_HOST,
   POSTGRES_USER,
   POSTGRES_DATABASE,
@@ -11,9 +11,12 @@ const {
 
 let pool:Pool;
 
-const connectionConfig:PoolConfig = POSTGRES_URL
+const connectionConfig:PoolConfig = DATABASE_URL
   ? <PoolConfig>{
-      connectionString: POSTGRES_URL,
+      connectionString: DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }
   : <PoolConfig>{
       user: POSTGRES_USER,
