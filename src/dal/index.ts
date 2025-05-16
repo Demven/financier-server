@@ -15,7 +15,7 @@ const connectionConfig:PoolConfig = DATABASE_URL
   ? <PoolConfig>{
       connectionString: DATABASE_URL,
       ssl: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
       },
     }
   : <PoolConfig>{
