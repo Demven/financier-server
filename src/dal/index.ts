@@ -11,13 +11,13 @@ const {
 
 let pool:Pool;
 
-console.info('process.env', process.env, 'DATABASE_URL', DATABASE_URL);
+console.info('process.env', process.env);
 
 const connectionConfig:PoolConfig = DATABASE_URL
   ? <PoolConfig>{
       connectionString: DATABASE_URL,
       ssl: {
-        rejectUnauthorized: true,
+        rejectUnauthorized: false,
       },
     }
   : <PoolConfig>{
@@ -32,7 +32,8 @@ const connectionConfig:PoolConfig = DATABASE_URL
     };
 
 export async function connectToDatabase() {
-  console.info(`Connect to the database: ${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}...`);
+  const connectionString = DATABASE_URL || `${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}`;
+  console.info(`Connect to the database: ${connectionString}...`);
 
   pool = new Pool(connectionConfig);
 
